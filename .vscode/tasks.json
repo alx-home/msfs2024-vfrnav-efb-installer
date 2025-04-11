@@ -1,0 +1,30 @@
+{
+   "version": "2.0.0",
+   "tasks": [
+      {
+         "type": "cmake",
+         "label": "CMake: configure",
+         "command": "configure",
+         "problemMatcher": [],
+         "detail": "CMake template configure task"
+      },
+      {
+         "type": "npm",
+         "script": "build",
+         "group": "build",
+         "problemMatcher": [],
+         "label": "npm: build",
+         "path": "app",
+         "detail": "dotenv -e .env.production tsc -b  && tsx --env-file=.env.production build.ts"
+      },
+      {
+         "type": "npm",
+         "script": "watch",
+         "group": "build",
+         "problemMatcher": [],
+         "label": "npm: watch",
+         "path": "app",
+         "detail": "watch"
+      }
+   ]
+}
