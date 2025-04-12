@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(json)
 FetchContent_Declare(
     promise
     GIT_REPOSITORY https://github.com/webview/webview
-    GIT_TAG 1.0.0)
+    GIT_TAG 1.1.0)
 FetchContent_MakeAvailable(promise)
 
 FetchContent_Declare(

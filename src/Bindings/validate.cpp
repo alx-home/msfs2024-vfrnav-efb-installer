@@ -1,6 +1,7 @@
 
 #include "Main.h"
-#include "windows/Registry.h"
+#include "Registry/Install.h"
+#include "Registry/Registry.h"
 
 #include <filesystem>
 #include <fstream>
@@ -69,59 +70,21 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
       }
    }
 
-   std::filesystem::copy(executablePath, installPath);
+   std::filesystem::copy(executablePath, installPath, std::filesystem::copy_options::overwrite_existing);
 
    auto const                  fsPath  = std::filesystem::path(communityPath).parent_path().parent_path();
    std::filesystem::path const exePath = std::filesystem::path(communityPath).parent_path().parent_path().string() + "/exe.xml";
 
-   reg::Key Uninstall{};
-   if (RegOpenKey(HKEY_CURRENT_USER, TEXT(R"(Software\Microsoft\Windows\CurrentVersion\Uninstall)"), Uninstall)
-       != ERROR_SUCCESS) {
-      webview_.eval(R"(window.pfatal("Could not open registry : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall");)");
-      co_return;
-   }
+   auto& registry = registry::get<Store::HKEY_CURRENT_USER_>();
+   registry.clear();
 
-   reg::Key UVFRNav{};
-   RegDeleteKey(Uninstall, "MSFS.VFRNav.server");
-   if (RegCreateKey(Uninstall, "MSFS.VFRNav.server", UVFRNav) != ERROR_SUCCESS) {
-      webview_.eval(R"(window.pfatal("Could not create registry key : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\MSFS.VFRNav.server");)");
-      co_return;
-   }
-   {
-      std::string const value = installPath + "/vfrnav.exe";
-      if (RegSetValueEx(UVFRNav, "DisplayIcon", 0, REG_SZ, reinterpret_cast<BYTE const*>(value.c_str()), value.size()) != ERROR_SUCCESS) {
-         webview_.eval(R"(window.pfatal("Could not create registry key : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\MSFS.VFRNav.server");)");
-         co_return;
-      }
-   }
-   {
-      std::string const value = "MSFS VFRNav' Server";
-      if (RegSetValueEx(UVFRNav, "DisplayName", 0, REG_SZ, reinterpret_cast<BYTE const*>(value.c_str()), value.size()) != ERROR_SUCCESS) {
-         webview_.eval(R"(window.pfatal("Could not create registry key : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\MSFS.VFRNav.server");)");
-         co_return;
-      }
-   }
-   {
-      std::string const value = "1.0.0";
-      if (RegSetValueEx(UVFRNav, "DisplayVersion", 0, REG_SZ, reinterpret_cast<BYTE const*>(value.c_str()), value.size()) != ERROR_SUCCESS) {
-         webview_.eval(R"(window.pfatal("Could not create registry key : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\MSFS.VFRNav.server");)");
-         co_return;
-      }
-   }
-   {
-      std::string const value = "alx-home";
-      if (RegSetValueEx(UVFRNav, "Publisher", 0, REG_SZ, reinterpret_cast<BYTE const*>(value.c_str()), value.size()) != ERROR_SUCCESS) {
-         webview_.eval(R"(window.pfatal("Could not create registry key : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\MSFS.VFRNav.server");)");
-         co_return;
-      }
-   }
-   {
-      std::string const value = installPath + "/vfrnav.exe --uninstall";
-      if (RegSetValueEx(UVFRNav, "UninstallString", 0, REG_SZ, reinterpret_cast<BYTE const*>(value.c_str()), value.size()) != ERROR_SUCCESS) {
-         webview_.eval(R"(window.pfatal("Could not create registry key : HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\MSFS.VFRNav.server");)");
-         co_return;
-      }
-   }
+   auto& uninstall = registry.current_version_->uninstall_;
+
+   uninstall->icon_      = installPath + "\\vfrnav.exe";
+   uninstall->name_      = "MSFS VFRNav' Server";
+   uninstall->version_   = "1.0.0";
+   uninstall->publisher_ = "alx-home";
+   uninstall->uninstall_ = installPath + "\\vfrnav.exe --uninstall";
 
    if (startupOption == "Startup") {
       if (!std::filesystem::exists(exePath)) {

@@ -67,7 +67,6 @@ Main::Main()
         0,
         user_data_dir_
      } {
-
    {
       auto const handle          = webview_.window();
       COLORREF   title_bar_color = 0x00ffb000;
