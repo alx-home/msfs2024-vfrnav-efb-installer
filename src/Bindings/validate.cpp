@@ -6,16 +6,133 @@
 #include <filesystem>
 #include <fstream>
 #include <regex>
+#include <string_view>
 
 std::string
 RemoveFromExeXml(std::string_view data) {
-   std::regex reg{R"(( |\t|\r?\n)*<Launch\.Addon>((.|\r?\n)(?!<Name>))*.?<Name>MSFS VFR Nav' Server((.|\r?\n)(?!</Launch\.Addon>))*.?</Launch\.Addon>([ \t]*(\r?\n)?))"};
-   return std::regex_replace(std::string{data}, reg, "");
+   // error_stack....
+   // std::regex reg{R"(( |\t|\r?\n)*<Launch\.Addon>((.|\r?\n)(?!<Name>))*.?<Name>MSFS VFR Nav' Server((.|\r?\n)(?!</Launch\.Addon>))*.?</Launch\.Addon>([ \t]*(\r?\n)?))"};
+
+   auto it = data.begin();
+
+   auto const skip_space = [&]() constexpr {
+      while (it != data.end() && (*it == ' ' || *it == '\t' || *it == '\n' || *it == '\r')) {
+         ++it;
+      }
+   };
+
+   auto const find = [&](std::string_view name) constexpr {
+      skip_space();
+
+      auto it2 = name.begin();
+
+      for (; it != data.end(); ++it, ++it2) {
+         if (it2 == name.end()) {
+            skip_space();
+
+            if (it != data.end() && *it == '>') {
+               ++it;
+               return true;
+            }
+
+            return false;
+         }
+
+         if (*it != *it2) {
+            return false;
+         }
+      }
+
+      return false;
+   };
+
+   auto const find_end = [&](std::string_view name) constexpr {
+      for (; it != data.end(); ++it) {
+
+         auto end = it;
+
+         if (*it == '<') {
+            ++it;
+            if (it == data.end()) {
+               return name.end();
+            }
+
+            skip_space();
+
+            if (*it == '/') {
+               ++it;
+               skip_space();
+
+               if (find(name)) {
+                  return end;
+               }
+            }
+         }
+      }
+
+      return name.end();
+   };
+
+   while (it != data.end()) {
+      auto const beg = it;
+
+      if (*it == ' ' || *it == '\t' || *it == '\r' || *it == '\n') {
+         skip_space();
+         if (it == data.end()) {
+            return data.data();
+         }
+      }
+
+      if (*it == '<') {
+         ++it;
+         if (find("Launch.Addon")) {
+            auto const launch_beg = it;
+
+            if (auto const launch_end = find_end("Launch.Addon"); launch_end != data.end()) {
+               auto end = it;
+               it       = launch_beg;
+
+               while (it != end) {
+                  if (*it == '<') {
+                     ++it;
+
+                     if (find("Name")) {
+                        auto name_beg = it;
+
+                        if (auto const name_end = find_end("Name"); name_end != data.end()) {
+                           if (std::distance(it, launch_end) > 0) {
+                              if (std::string_view{name_beg, name_end} == "MSFS VFR Nav' Server") {
+                                 // FOUND :)
+                                 it = end;
+                                 skip_space();
+                                 end = it;
+
+                                 if (end != data.end()) {
+                                    return std::string{data.begin(), beg} + std::string{end, data.end()};
+                                 } else {
+                                    return std::string{data.begin(), beg};
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  } else {
+                     ++it;
+                  }
+               }
+            }
+         }
+      } else {
+         ++it;
+      }
+   }
+
+   return data.data();
 }
 
 std::string
 AddToExeXml(std::string_view data, std::string_view path) {
-   std::regex  reg{"</SimBase.Document>"};
+   std::regex  reg{"(\r?\n)?</SimBase.Document>"};
    std::string replaceString{std::string_view{
       R"_(
     <Launch.Addon>
