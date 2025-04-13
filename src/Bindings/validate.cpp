@@ -204,6 +204,7 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
          cleanExe = true;
       }
    } catch (registry::access_error const&) {
+      // Registry not set: no cleaning needed
    }
 
    registry.clear();
