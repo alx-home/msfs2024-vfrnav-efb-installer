@@ -77,8 +77,11 @@ Main::Main()
 #ifndef WATCH_MODE
    install_ressource_handler();
 #endif
-#ifdef DEBUG
-   webview_.open_dev_tools();
+
+#ifndef DEBUG
+   webview_.add_user_script(R"_(document.addEventListener("contextmenu", (e) => {
+   e.preventDefault();
+});)_");
 #endif
 
    webview_.set_size(960, 640, webview::Hint::NONE);
