@@ -195,10 +195,11 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
    std::filesystem::path const exePath = fsPath.string() + "/exe.xml";
 
    auto& registry = registry::get<Store::HKEY_CURRENT_USER_>();
+   auto& settings = registry.alx_home_->settings_;
 
    bool cleanExe = false;
-   if (registry.alx_home_->settings_->launch_mode_) {
-      auto const oldValue = *registry.alx_home_->settings_->launch_mode_;
+   if (settings->launch_mode_) {
+      auto const oldValue = *settings->launch_mode_;
 
       if (oldValue == "Startup") {
          cleanExe = true;
@@ -214,8 +215,6 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
    uninstall->version_   = "1.0.0";
    uninstall->publisher_ = "alx-home";
    uninstall->uninstall_ = installPath + "\\vfrnav.exe --uninstall";
-
-   auto& settings = registry.alx_home_->settings_;
 
    settings->launch_mode_ = startupOption;
    settings->community_   = communityPath;
