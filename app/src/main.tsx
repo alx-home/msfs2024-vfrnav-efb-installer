@@ -14,26 +14,25 @@ window.pfatal = (message: string) => {
   setPopupRef.current?.(<div className='flex flex-col gap-y-6 grow'>
     <div className='text-3xl text-red-700'>Fatal Error !</div>
     <div className='text-xl gap-y-2'>
-      {message.split('#').map(elem =>
-        <div key={elem}>{elem}</div>
-      )}
+      <div dangerouslySetInnerHTML={{ __html: message }}></div>
+    </div>
+    <div className='flex flex-row grow'>
+      <Button active={true} onClick={() => setPopupRef.current?.(undefined)}>OK</Button>
+    </div>
+  </div>);
+}; // todo stack dialogs
+
+window.pwarning = (message: string) => {
+  setPopupRef.current?.(<div className='flex flex-col gap-y-6 grow'>
+    <div className='text-3xl text-yellow-500'>Warning !</div>
+    <div className='text-xl gap-y-2'>
+      <div dangerouslySetInnerHTML={{ __html: message }}></div>
     </div>
     <div className='flex flex-row grow'>
       <Button active={true} onClick={() => setPopupRef.current?.(undefined)}>OK</Button>
     </div>
   </div>);
 };
-
-if (__WEB_BROWSER_TEST__) {
-  window.findCommunity = () => {
-    return Promise.resolve("Comunity_");
-  }
-  window.exists = () => {
-    return Promise.resolve(true);
-  }
-  window.validate = () => {
-  }
-}
 
 const Popup = () => {
   const [popup, setPopup] = useState<ReactElement | undefined>(undefined);

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "AlxHome.h"
 #include "Install.h"
-#include "Settings.h"
 
 namespace registry {
 
@@ -26,7 +26,7 @@ template <Store store>
 class Registry : public registry::Key<store, "", void> {
 public:
    KeyPtr<CurrentVersion<store, Registry>> current_version_;
-   KeyPtr<Settings<store, Registry>>       settings_;
+   KeyPtr<AlxHome<store, Registry>>        alx_home_;
 
 protected:
    Registry() = default;
@@ -34,7 +34,7 @@ protected:
 public:
    static constexpr KeysPtr keys_{
       &Registry::current_version_,
-      &Registry::settings_
+      &Registry::alx_home_
    };
 };
 

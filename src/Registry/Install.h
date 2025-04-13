@@ -8,7 +8,7 @@
 namespace registry {
 
 template <Store store, class Parent>
-class Uninstall : public Key<store, "Uninstall\\MSFS.VFRNav.server", Parent> {
+class Uninstall : public Key<store, "Uninstall\\MSFS.VFRNav.server", Parent, true> {
 public:
    Uninstall() = default;
 

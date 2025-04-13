@@ -18,4 +18,5 @@ declare var parentExists: (_val: string) => Promise<boolean>;
 declare var abort: () => void;
 declare var validate: (_startupOption: StartupOption, _communityPath: string, _installPath: string) => void;
 declare var pfatal: (_message: string) => void;
+declare var pwarning: (_message: string) => void;
 declare const __WEB_BROWSER_TEST__: boolean;
