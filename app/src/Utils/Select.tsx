@@ -85,7 +85,7 @@ export function Select<Id>({ children, className, active, disabled, value, onCha
       childs.map((child, index) =>
          <button key={child.props.id as string}
             ref={optionsRef?.[index]}
-            className='border-2 border-transparent hocus:border-msfs p-2'
+            className='my-1 py-1 px-2 border-2 border-transparent hocus:border-msfs'
             onClick={() => {
                elemRef.current?.focus()
                onChange(child.props.id)
