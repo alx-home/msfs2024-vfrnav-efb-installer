@@ -197,14 +197,12 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
    auto& registry = registry::get<Store::HKEY_CURRENT_USER_>();
 
    bool cleanExe = false;
-   try {
+   if (registry.alx_home_->settings_->launch_mode_) {
       auto const oldValue = *registry.alx_home_->settings_->launch_mode_;
 
       if (oldValue == "Startup") {
          cleanExe = true;
       }
-   } catch (registry::access_error const&) {
-      // Registry not set: no cleaning needed
    }
 
    registry.clear();
