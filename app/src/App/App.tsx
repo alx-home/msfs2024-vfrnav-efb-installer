@@ -106,7 +106,7 @@ const Body = ({ setCanContinue, validate }: {
   setCanContinue: (_setter: SetStateAction<boolean>) => void,
   validate: RefObject<(() => void) | null>
 }) => {
-  const { path: communityPath, valid: communityValid, set: setCommunityPath, elem: communityElem } = useFolder({ placeholder: 'Location of MSFS 2024 community folder' });
+  const { path: communityPath, valid: communityValid, set: setCommunityPath, elem: communityElem } = useFolder({ placeholder: 'Location of MSFS 2024 community folder', autoSub: 'alexhome-msfs2024-vfrnav' });
   const { path: installPath, valid: installPathValid, set: setInstallPath, elem: installPathElem } = useFolder({ placeholder: 'VFRNav\' Server installation path', autoSub: 'MSFS VFRNav Server' });
 
   const [startupOption, setStartupOption] = useState<StartupOption>('Login');

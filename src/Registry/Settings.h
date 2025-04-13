@@ -10,6 +10,8 @@ public:
    Settings() = default;
 
    Value<std::string, Settings, "LaunchMode"> launch_mode_;
+   Value<std::string, Settings, "Community">  community_;
+   Value<std::string, Settings, "Install">    destination_;
 
    static constexpr Values values_{
       &Settings::launch_mode_

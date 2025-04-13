@@ -191,8 +191,8 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
 
    std::filesystem::copy(executablePath, installPath, std::filesystem::copy_options::overwrite_existing);
 
-   auto const                  fsPath  = std::filesystem::path(communityPath).parent_path().parent_path();
-   std::filesystem::path const exePath = std::filesystem::path(communityPath).parent_path().parent_path().string() + "/exe.xml";
+   auto const                  fsPath  = std::filesystem::path(communityPath).parent_path().parent_path().parent_path();
+   std::filesystem::path const exePath = fsPath.string() + "/exe.xml";
 
    auto& registry = registry::get<Store::HKEY_CURRENT_USER_>();
 
@@ -219,6 +219,8 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
    auto& settings = registry.alx_home_->settings_;
 
    settings->launch_mode_ = startupOption;
+   settings->community_   = communityPath;
+   settings->destination_ = installPath;
 
    if (startupOption == "Startup" || cleanExe) {
       if (auto const exists = std::filesystem::exists(exePath); !exists && (startupOption == "Startup")) {
@@ -247,7 +249,7 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
          std::ofstream file{exePath, std::ios::ate};
          file.write(content.data(), content.size());
       } else {
-         webview_.eval(R"(window.pwarning('Path not found : <br/>)" + js::serialize(exePath.string()) + R"(<br/><br/>Couldn\'t clean it !');)");
+         webview_.eval(R"(window.pwarning('Path not found : <br/>)" + js::serialize(exePath.string()) + R"(');)");
       }
    }
 
