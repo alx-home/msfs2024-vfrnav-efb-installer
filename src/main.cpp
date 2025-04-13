@@ -74,15 +74,23 @@ Main::Main()
          handle, DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR, &title_bar_color, sizeof(title_bar_color)
       );
    }
-
+#ifndef WATCH_MODE
    install_ressource_handler();
+#endif
+#ifdef DEBUG
+   webview_.open_dev_tools();
+#endif
 
    webview_.set_size(960, 640, webview::Hint::NONE);
    webview_.set_size(480, 320, webview::Hint::MIN);
 
    install_bindings();
 
+#ifdef WATCH_MODE
+   webview_.navigate("http://localhost:4000");
+#else
    webview_.navigate("app://app/index.html");
+#endif
    webview_.run();
 }
 

@@ -5,6 +5,8 @@ set(FETCHCONTENT_SOURCE_DIR_JSON ${CMAKE_SOURCE_DIR}/packages/json)
 set(FETCHCONTENT_SOURCE_DIR_PROMISE ${CMAKE_SOURCE_DIR}/packages/promise)
 set(FETCHCONTENT_SOURCE_DIR_WINDOWS ${CMAKE_SOURCE_DIR}/packages/windows)
 
+option(WATCH_MODE "Enable watch mode in debug mode" ON)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/dependencies.cmake)
 
 add_executable(vfrnav WIN32 main.cpp main.rc 
@@ -60,6 +62,12 @@ endif(DEFINED SANITIZE)
 #         -fsanitize-recover=address
 #     )
 # endif(DEFINED ADDRESS_SANITIZER)
+
+if(WATCH_MODE)
+    list(APPEND COMPILE_OPTIONS
+        "$<$<CONFIG:Debug>:-DWATCH_MODE>"
+    )
+endif()
 
 if(MSVC)
     list(TRANSFORM COMPILE_OPTIONS PREPEND "-clang:")
