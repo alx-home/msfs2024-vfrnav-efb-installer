@@ -1,3 +1,4 @@
+add_subdirectory(app)
 
 # set(FETCHCONTENT_SOURCE_DIR_MICROSOFT_WEB_WEBVIEW2 ${CMAKE_SOURCE_DIR}/packages/Microsoft.Web.WebView2/)
 set(FETCHCONTENT_SOURCE_DIR_WEBVIEW ${CMAKE_SOURCE_DIR}/packages/webview)
@@ -9,7 +10,7 @@ option(WATCH_MODE "Enable watch mode in debug mode" ON)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/dependencies.cmake)
 
-add_executable(vfrnav WIN32 main.cpp main.rc 
+add_executable(installer WIN32 main.cpp main.rc 
         window/windows/FileDialog.cpp
         Bindings/abort.cpp
         Bindings/defaultInstallPath.cpp
@@ -21,23 +22,25 @@ add_executable(vfrnav WIN32 main.cpp main.rc
         Bindings/parentExists.cpp
         Bindings/validate.cpp
         )
-# add_executable(vfrnav WIN32 promise_test.cpp Promise/impl/Promise.cpp)
-# add_executable(vfrnav WIN32 json_test.cpp ./json/json.cpp)
+# add_executable(installer WIN32 promise_test.cpp Promise/impl/Promise.cpp)
+# add_executable(installer WIN32 json_test.cpp ./json/json.cpp)
 
-set_target_properties(vfrnav PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(vfrnav PROPERTIES CXX_STANDARD 26)
-set_target_properties(vfrnav PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
-set_target_properties(vfrnav PROPERTIES CMAKE_CXX_EXTENSIONS ON)
+set_target_properties(installer PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(installer PROPERTIES CXX_STANDARD 26)
+set_target_properties(installer PROPERTIES CMAKE_CXX_STANDARD_REQUIRED ON)
+set_target_properties(installer PROPERTIES CMAKE_CXX_EXTENSIONS ON)
 
-target_include_directories(vfrnav PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(installer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(vfrnav PRIVATE 
+target_link_libraries(installer PRIVATE 
         alx-home::webview 
         alx-home::windows 
         alx-home::json 
         alx-home::promise)
 
-target_link_libraries(vfrnav PRIVATE package Dwmapi)
+add_dependencies(installer server)
+
+target_link_libraries(installer PRIVATE installer_resources Dwmapi)
 
 set(COMPILE_OPTIONS
     -std=c++2c
@@ -71,9 +74,9 @@ endif()
 
 if(MSVC)
     list(TRANSFORM COMPILE_OPTIONS PREPEND "-clang:")
-    target_compile_options(vfrnav PUBLIC /W4 ${COMPILE_OPTIONS})
+    target_compile_options(installer PUBLIC /W4 ${COMPILE_OPTIONS})
 else()
-    target_compile_options(vfrnav PUBLIC 
+    target_compile_options(installer PUBLIC 
         -export-dynamic
         -ggdb3 -pg -g
         ${COMPILE_OPTIONS}
@@ -83,11 +86,25 @@ else()
 endif()
 
 
-# set(MAJOR_VERSION 1)
-# set(MINOR_VERSION 0)
-# set(REVISION 0)
+set(MAJOR_VERSION 1)
+set(MINOR_VERSION 0)
+set(REVISION 0)
 
-# set(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION})
+set(VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${REVISION})
 
-# set_target_properties(vfrnav PROPERTIES VERSION ${MAJOR_VERSION})
-# set_target_properties(vfrnav PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
+set_target_properties(installer PROPERTIES VERSION ${MAJOR_VERSION})
+set_target_properties(installer PROPERTIES SOVERSION ${MAJOR_VERSION}.${MINOR_VERSION})
+set_target_properties(installer PROPERTIES OUTPUT_NAME "vfrnav-installer")
+
+
+# PACKAGER
+
+set(ASM_FILE ${CMAKE_CURRENT_BINARY_DIR}/Resources.asm)
+set(ASM_OBJ ${CMAKE_CURRENT_BINARY_DIR}/Resources.obj)
+set(ASM_CPP ${CMAKE_CURRENT_BINARY_DIR}/Resources.cpp)
+set(APP_PATH ${CMAKE_CURRENT_BINARY_DIR}/app)
+
+set(ARGS --app resources ${APP_PATH} --resource server_bin ${CMAKE_BINARY_DIR}/server/vfrnav-server.exe)
+
+package(installer_resources ${APP_PATH}/index.html server)
+

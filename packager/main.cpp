@@ -3,13 +3,13 @@
 #include <WinUser.h>
 #include <winnt.h>
 
+#include <cassert>
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-
 
 #ifdef _WIN32
 int WINAPI
@@ -19,114 +19,191 @@ int
 main() {
 #endif
 
-    std::string cmd{lpCmdLine};
+   std::string cmd{lpCmdLine};
+   std::cout << "!!!" << lpCmdLine << "!!!" << std::endl;
 
-    auto const split = cmd.find_first_of(' ');
+   std::unordered_map<std::string, std::string> resources{};
+   std::unordered_map<std::string, std::string> appResources{};
+   std::string                                  name{};
 
-    std::size_t index = 0;
+   std::string type{};
+   std::string tag{};
+   while (cmd.size()) {
+      auto const split = cmd.find_first_of(' ');
 
-    std::string buildpath{cmd.substr(0, split)};
-    std::string headerpath{buildpath.substr(0, buildpath.size() - 3) + "cpp"};
-    std::string apppath{cmd.substr(split + 1)};
+      if (name.empty()) {
+         name = cmd.substr(0, split);
+      } else if (type.empty()) {
+         type = cmd.substr(0, split);
+         assert(type.starts_with("--"));
+      } else if (tag.empty()) {
+         tag = cmd.substr(0, split);
+      } else {
+         assert(type.size());
+         assert(tag.size());
 
-    std::cout << "AppPath: " << apppath << std::endl;
-    std::cout << "BuildPath: " << buildpath << std::endl;
-    std::cout << "HeaderPath: " << headerpath << std::endl
-              << std::endl;
+         if (type == "--app") {
+            appResources.emplace(tag, cmd.substr(0, split));
+         } else {
+            assert(type == "--resource");
+            resources.emplace(tag, cmd.substr(0, split));
+         }
 
-    std::ofstream asmOut{buildpath};
-    std::ofstream headerOut{headerpath};
+         type.clear();
+         tag.clear();
+      }
 
-    asmOut << "section .data\n"
-           << std::endl;
+      if (split == std::string::npos) {
+         break;
+      }
+      cmd = cmd.substr(split + 1);
+   }
 
-    std::vector<std::pair<std::string, std::string>> entries{};
+   std::string const headerpath{name + "/Resources.cpp"};
+   std::string const buildpath{name + "/Resources.asm"};
 
-    headerOut << R"_(#include <Windows.h>
+   std::cout << "BuildPath: " << buildpath << std::endl;
+   std::cout << "HeaderPath: " << headerpath << std::endl
+             << std::endl;
+
+   std::ofstream asmOut{buildpath};
+   std::ofstream headerOut{headerpath};
+
+   asmOut << "section .data\n"
+          << std::endl;
+
+   headerOut << R"_(#include <Windows.h>
 #include <cstddef>
 #include <string>
+#include <span>
 #include <unordered_map>
 #include <vector>
 #include <algorithm>
 
-extern std::unordered_map<std::string, std::vector<char>> const resources;
-
 )_" << std::endl;
 
-    std::size_t resource_index  = 0;
-    std::size_t offset = apppath.size();
+   std::size_t resource_index = 0;
 
-    std::function<void(std::string const&)> const recurse = [&](std::string const& path) {
-        std::cout << "Entering " << path << std::endl;
-        if (!std::filesystem::is_directory(path)) {
-            throw std::runtime_error("path " + path + " is not a directory");
-        }
+   for (auto const& [name, resource] : appResources) {
+      std::size_t                                      offset = resource.size();
+      std::vector<std::pair<std::string, std::string>> entries{};
 
-        for (auto const& entry : std::filesystem::directory_iterator(path)) {
+      headerOut << std::format(R"(
+// ------------------------------------------------------------------------------------
+//                  APP {0}
+// ------------------------------------------------------------------------------------)",
+                               name);
+
+      std::function<void(std::string const&)> const recurse = [&](std::string const& path) {
+         std::cout << "Entering " << path << std::endl;
+         if (!std::filesystem::is_directory(path)) {
+            throw std::runtime_error(std::format("path {} is not a directory", path));
+         }
+
+         for (auto const& entry : std::filesystem::directory_iterator(path)) {
             if (entry.is_directory()) {
-                recurse(entry.path().string());
+               recurse(entry.path().string());
             } else {
-                std::string filePath_ = entry.path().string();
-                std::string filePath;
-                std::string varName = "incbin_" + std::to_string(resource_index);
-                ++resource_index;
-                std::string relpath;
+               std::string filePath_ = entry.path().string();
+               std::string filePath;
+               std::string varName = std::format("incbin_{}", resource_index);
+               ++resource_index;
+               std::string relpath;
 
-                for (std::size_t i = 0; i < filePath_.size(); ++i) {
-                    if (i > offset) {
-                        if (filePath_[i] == '\\') {
-                            relpath += "/";
-                        } else {
-                            relpath += filePath_[i];
-                        }
-                    }
+               for (std::size_t i = 0; i < filePath_.size(); ++i) {
+                  if (i > offset) {
+                     if (filePath_[i] == '\\') {
+                        relpath += "/";
+                     } else {
+                        relpath += filePath_[i];
+                     }
+                  }
 
-                    if (filePath_[i] == '\\' || filePath_[i] == '/' || filePath_[i] == '.' || filePath_[i] == '-') {
-                        if (filePath_[i] == '\\') {
-                            filePath += "/";
-                        } else {
-                            filePath += filePath_[i];
-                        }
-                    } else {
+                  if (filePath_[i] == '\\' || filePath_[i] == '/' || filePath_[i] == '.' || filePath_[i] == '-') {
+                     if (filePath_[i] == '\\') {
+                        filePath += "/";
+                     } else {
                         filePath += filePath_[i];
-                    }
-                }
+                     }
+                  } else {
+                     filePath += filePath_[i];
+                  }
+               }
 
-                std::cout << "Generating " << entry << ": " << varName << std::endl;
-                asmOut << std::format(R"_(global {0}_start, {0}_end
-    {0}_start:
-    incbin "{1}"
-    {0}_end:
+               std::cout << "Generating " << entry << ": " << varName << std::endl;
+               asmOut << std::format(R"_(global {0}_start, {0}_end
+{0}_start:
+incbin "{1}"
+{0}_end:
     )_",
-                                      varName,
-                                      filePath)
-                       << std::endl;
+                                     varName,
+                                     filePath)
+                      << std::endl;
 
-                headerOut << std::format(R"_(
+               headerOut << std::format(R"_(
+
 extern "C" char const    {0}_start[];
 extern "C" char const    {0}_end[];
-static std::size_t const {0}_size = {0}_end - {0}_start;)_",
-                                         varName)
-                          << std::endl;
+static std::size_t const {0}_size = {0}_end - {0}_start;
+)_",
+                                        varName)
+                         << std::endl;
 
-                entries.emplace_back(relpath, varName);
-                ++index;
+               entries.emplace_back(relpath, varName);
             }
-        }
-    };
+         }
+      };
 
-    recurse(apppath);
+      recurse(resource);
 
-    headerOut << R"_(
-std::unordered_map<std::string, std::vector<char>> const resources {)_"
-              << std::endl;
+      headerOut << std::format(R"_(
+extern std::unordered_map<std::string, std::span<std::byte const>> const {0};
+std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
+                               name)
+                << std::flush;
 
-    for (auto const& [path, label] : entries) {
-        headerOut << "   { \""
-                  << path << "\", []() { std::vector<char> result; result.resize(" << label << "_size); std::copy(" << label << "_start, " << label << "_end, result.begin()); return result; }() },"
-                  << std::endl;
-    }
+      for (auto const& [path, label] : entries) {
+         headerOut << std::format(R"_(
+   {{ "{0}", {{ reinterpret_cast<std::byte const*>({1}_start), {1}_size }} }},)_",
+                                  path,
+                                  label);
+      }
 
-    headerOut << R"_(};)_" << std::endl;
-    return 0;
+      headerOut << R"_(
+};
+)_" << std::endl;
+   }
+
+   for (auto const& [name, resource] : resources) {
+
+      std::cout << "Generating " << resource << ": " << name << std::endl;
+
+      headerOut << std::format(R"_(
+// ------------------------------------------------------------------------------------
+//                  RESOURCES {0}
+// ------------------------------------------------------------------------------------
+
+extern "C" char const    {0}_start[];
+extern "C" char const    {0}_end[];
+static std::size_t const {0}_size = {0}_end - {0}_start;
+
+extern std::span<std::byte const> const {0};
+std::span<std::byte const> const {0}{{
+   reinterpret_cast<std::byte const*>({0}_start),
+   {0}_size
+}};
+)_",
+                               name)
+                << std::endl;
+
+      asmOut << std::format(R"_(global {0}_start, {0}_end
+{0}_start:
+incbin "{1}"
+{0}_end:
+          )_",
+                            name,
+                            resource)
+             << std::endl;
+   }
+   return 0;
 }

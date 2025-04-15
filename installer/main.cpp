@@ -16,10 +16,16 @@
 #include <winreg.h>
 
 #include <algorithm>
+#include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <utility>
+
+enum class ProgramMode {
+   INSTALL,
+   EXE
+};
 
 #ifdef _WIN32
 int WINAPI
@@ -108,7 +114,7 @@ Main::install_ressource_handler() {
             if (resource != resources.end()) {
                std::vector<char> data{};
                data.resize(resource->second.size());
-               std::ranges::copy(resource->second, data.begin());
+               std::ranges::copy(resource->second, reinterpret_cast<std::byte*>(data.data()));
 
                auto const ext         = file.substr(file.find_last_of('.') + 1);
                auto const contentType = ext == "js" ? "text/javascript" : "text/html";

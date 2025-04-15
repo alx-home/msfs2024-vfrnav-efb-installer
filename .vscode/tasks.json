@@ -13,8 +13,8 @@
          "script": "build",
          "group": "build",
          "problemMatcher": [],
-         "label": "npm: build",
-         "path": "app",
+         "label": "npm: build installer",
+         "path": "installer/app",
          "detail": "dotenv -e .env.production tsc -b  && tsx --env-file=.env.production build.ts"
       },
       {
@@ -22,8 +22,8 @@
          "script": "watch",
          "group": "build",
          "problemMatcher": [],
-         "label": "npm: watch",
-         "path": "app",
+         "label": "npm: watch installer",
+         "path": "installer/app",
          "detail": "watch"
       }
    ]
