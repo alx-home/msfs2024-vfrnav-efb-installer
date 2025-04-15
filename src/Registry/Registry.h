@@ -2,21 +2,24 @@
 
 #include "AlxHome.h"
 #include "Install.h"
+#include "Run.h"
 
 namespace registry {
 
 template <Store store, class Parent>
-class CurrentVersion : public Key<store, R"(Software\Microsoft\Windows\CurrentVersion)", Parent, false> {
+class CurrentVersion : public Key<store, "Software\\Microsoft\\Windows\\CurrentVersion", Parent, false> {
 public:
    CurrentVersion() = default;
 
    KeyPtr<Uninstall<store, CurrentVersion>> uninstall_;
+   KeyPtr<Run<store, CurrentVersion>>       run_;
 
    static constexpr Values values_{
    };
 
    static constexpr KeysPtr keys_{
-      &CurrentVersion::uninstall_
+      &CurrentVersion::uninstall_,
+      &CurrentVersion::run_
    };
 };
 

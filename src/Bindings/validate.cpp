@@ -251,5 +251,10 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
       }
    }
 
+   if (startupOption == "Login") {
+      auto& run   = registry.current_version_->run_;
+      run->value_ = installPath + "\\vfrnav.exe --minimize";
+   }
+
    co_return;
 }

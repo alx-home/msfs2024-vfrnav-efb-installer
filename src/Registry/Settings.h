@@ -5,7 +5,7 @@
 namespace registry {
 
 template <Store store, class Parent>
-class Settings : public Key<store, "MSFS.VFRNav.server", Parent, true> {
+class Settings : public Key<store, "MSFS VFRNav Server", Parent, true> {
 public:
    Settings() = default;
 
