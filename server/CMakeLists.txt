@@ -97,10 +97,7 @@ set_target_properties(server PROPERTIES OUTPUT_NAME "vfrnav-server")
 
 # PACKAGER
 
-set(ASM_FILE ${CMAKE_CURRENT_BINARY_DIR}/Resources.asm)
-set(ASM_OBJ ${CMAKE_CURRENT_BINARY_DIR}/Resources.obj)
-set(ASM_CPP ${CMAKE_CURRENT_BINARY_DIR}/Resources.cpp)
-set(APP_PATH ${CMAKE_CURRENT_BINARY_DIR}/app)
-set(ARGS --app resources ${APP_PATH})
-
-package(server_resources ${APP_PATH}/index.html)
+package(TARGET_NAME server_resources 
+        APP_RESOURCES
+            resources ${CMAKE_CURRENT_BINARY_DIR}/app
+)

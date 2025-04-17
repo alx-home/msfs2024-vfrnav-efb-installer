@@ -99,12 +99,10 @@ set_target_properties(installer PROPERTIES OUTPUT_NAME "vfrnav-installer")
 
 # PACKAGER
 
-set(ASM_FILE ${CMAKE_CURRENT_BINARY_DIR}/Resources.asm)
-set(ASM_OBJ ${CMAKE_CURRENT_BINARY_DIR}/Resources.obj)
-set(ASM_CPP ${CMAKE_CURRENT_BINARY_DIR}/Resources.cpp)
-set(APP_PATH ${CMAKE_CURRENT_BINARY_DIR}/app)
-
-set(ARGS --app resources ${APP_PATH} --resource server_bin ${CMAKE_BINARY_DIR}/server/vfrnav-server.exe)
-
-package(installer_resources ${APP_PATH}/index.html server)
+package(TARGET_NAME installer_resources 
+        RESOURCES 
+            server_bin ${CMAKE_BINARY_DIR}/server/vfrnav-server.exe
+        APP_RESOURCES
+            resources ${CMAKE_CURRENT_BINARY_DIR}/app
+)
 

@@ -26,7 +26,7 @@ const Config: UserConfig = {
             manualChunks: undefined
          },
       },
-      outDir: "../../build/installer/app",
+      outDir: "../../build/installer/app/dist",
       ssr: false,
       sourcemap: process.env.BUILD_TYPE === 'development',
       emptyOutDir: true,

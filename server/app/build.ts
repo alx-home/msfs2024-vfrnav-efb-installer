@@ -26,7 +26,7 @@ const Config: UserConfig = {
             manualChunks: undefined
          },
       },
-      outDir: "../../build/server/app",
+      outDir: "../../build/server/app/dist",
       ssr: false,
       sourcemap: process.env.BUILD_TYPE === 'development',
       emptyOutDir: true,
