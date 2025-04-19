@@ -1,0 +1,1 @@
+// Hack for compile_commands header only library

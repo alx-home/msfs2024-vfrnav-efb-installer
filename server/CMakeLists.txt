@@ -26,11 +26,12 @@ win32_executable(TARGET_NAME server
         ${COMPILE_OPTIONS}
 )
 
-target_link_libraries(server PRIVATE 
+target_link_libraries(server 
+    PRIVATE 
         alx-home::webview 
-        alx-home::windows 
         alx-home::json 
         alx-home::promise
+        vfrnav::registry
         server_resources 
         Dwmapi
 )

@@ -29,15 +29,13 @@ win32_executable(TARGET_NAME installer_int
 
 target_link_libraries(installer_int PRIVATE 
         alx-home::webview 
-        alx-home::windows 
         alx-home::json 
         alx-home::promise
         installer_resources 
+        vfrnav::registry
         Dwmapi
         Boost::iostreams
 )
-
-add_dependencies(installer_int server)
 
 set(MAJOR_VERSION 1)
 set(MINOR_VERSION 0)

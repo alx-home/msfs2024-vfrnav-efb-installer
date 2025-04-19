@@ -5,10 +5,22 @@
    "version": "0.2.0",
    "configurations": [
       {
-         "name": "(Windows) Launch",
+         "name": "(Windows) Launch Installer",
          "type": "cppvsdbg",
          "request": "launch",
          "program": "${workspaceFolder}/build/installer/vfrnav-installer-int.exe",
+         "args": [],
+         "stopAtEntry": false,
+         "cwd": "${fileDirname}",
+         "environment": [],
+         "console": "integratedTerminal",
+         "preLaunchTask": "CMake: build"
+      },
+      {
+         "name": "(Windows) Launch Server",
+         "type": "cppvsdbg",
+         "request": "launch",
+         "program": "${workspaceFolder}/build/server/vfrnav-server.exe",
          "args": [],
          "stopAtEntry": false,
          "cwd": "${fileDirname}",

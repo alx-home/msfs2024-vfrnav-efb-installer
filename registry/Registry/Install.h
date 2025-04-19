@@ -1,6 +1,5 @@
 #pragma once
 
-#include "windows/Registry/impl/Registry.h"
 #include <windows/Registry/Registry.h>
 
 #include <string>

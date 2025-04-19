@@ -11,6 +11,7 @@ set(FETCHCONTENT_SOURCE_DIR_WINDOWS ${CMAKE_SOURCE_DIR}/packages/windows)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/win32_executable.cmake)
 
+add_subdirectory(registry)
 add_subdirectory(packager)
 add_subdirectory(server)
 add_subdirectory(installer)
