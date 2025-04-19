@@ -12,7 +12,10 @@ let popupProm = Promise.resolve();
 export const addPopup = (elem_: ReactElement<any>) => {
    popupProm = popupProm.then(() =>
       new Promise<void>((resolve) =>
-         popupRef?.(<elem_.type {...elem_.props} close={resolve} />)
+         popupRef?.(<elem_.type {...elem_.props} close={elem_.props.close ? () => {
+            elem_.props.close()
+            resolve()
+         } : resolve} />)
       )
    ).then(() => {
       popupRef?.(undefined)

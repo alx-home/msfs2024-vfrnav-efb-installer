@@ -169,23 +169,23 @@ AddToExeXml(std::string_view data, std::string_view path) {
    return std::regex_replace(std::string{data}, reg, replaceString);
 }
 
-Promise<>
+Promise<bool>
 Main::validate(std::string startupOption, std::string communityPath, std::string installPath) {
    if (std::filesystem::path const path{installPath}; !path.has_parent_path() || !std::filesystem::exists(path.parent_path())) {
-      co_return Fatal("Parent path not found : <br/>\"" + installPath + "\"");
+      co_return Fatal("Parent path not found : <br/>\"" + installPath + "\""), false;
    }
 
    if (!std::filesystem::exists(communityPath)) {
-      co_return Fatal("Path not found : <br/>\"" + communityPath + "\"");
+      co_return Fatal("Path not found : <br/>\"" + communityPath + "\""), false;
    }
 
    if (startupOption != "Startup" && startupOption != "Login" && startupOption != "Never") {  //@todo json : std::variant + fixed string value
-      co_return Fatal("Unknown startup option : \"" + startupOption + "\"");
+      co_return Fatal("Unknown startup option : \"" + startupOption + "\""), false;
    }
 
    if (!std::filesystem::create_directory(installPath)) {
       if (!std::filesystem::exists(installPath) || !std::filesystem::is_directory(installPath)) {
-         co_return Fatal("Couldn't create directory : <br/>\"" + installPath + "\"");
+         co_return Fatal("Couldn't create directory : <br/>\"" + installPath + "\""), false;
       }
    }
 
@@ -265,5 +265,5 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
       run->value_ = installPath + "\\vfrnav.exe --minimize";
    }
 
-   co_return Info("MSFS VFRNav server successfully installed !<br />");
+   co_return true;
 }

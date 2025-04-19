@@ -3,7 +3,7 @@ import { EndSlot, Input } from "@Utils/Input";
 import { Scroll } from "@Utils/Scroll";
 import { Option, Select } from "@Utils/Select";
 import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { addPopup, LoadingPopup } from "./Popup";
+import { addPopup, LoadingPopup, MessagePopup } from "./Popup";
 
 const Elem = ({ children }: PropsWithChildren) => {
    return <div className='flex flex-row bg-slate-800 p-5 text-left'>
@@ -123,7 +123,17 @@ export const Body = ({ setCanContinue, validate }: {
    useEffect(() => {
       validate.current = async () => {
          addPopup(<LoadingPopup title="Installing" message="Installing MSFS VFRNav server..." closeRef={closeRef} />)
-         await window.validate(startupOption, communityPath, installPath);
+
+         if (await window.validate(startupOption, communityPath, installPath)) {
+            addPopup(<MessagePopup
+               title={<div className='text-3xl text-blue-400'>Info</div>}
+               message="MSFS VFRNav Successfully installed !"
+               close={() => {
+                  window.abort()
+               }}
+            />)
+         }
+
          closeRef.current!();
       }
    }, [closeRef, communityPath, installPath, startupOption, validate])
