@@ -1,14 +1,6 @@
 add_subdirectory(app)
 
-# set(FETCHCONTENT_SOURCE_DIR_MICROSOFT_WEB_WEBVIEW2 ${CMAKE_SOURCE_DIR}/packages/Microsoft.Web.WebView2/)
-set(FETCHCONTENT_SOURCE_DIR_WEBVIEW ${CMAKE_SOURCE_DIR}/packages/webview)
-set(FETCHCONTENT_SOURCE_DIR_JSON ${CMAKE_SOURCE_DIR}/packages/json)
-set(FETCHCONTENT_SOURCE_DIR_PROMISE ${CMAKE_SOURCE_DIR}/packages/promise)
-set(FETCHCONTENT_SOURCE_DIR_WINDOWS ${CMAKE_SOURCE_DIR}/packages/windows)
-
 option(WATCH_MODE "Enable watch mode in debug mode" ON)
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/dependencies.cmake)
 
 add_executable(server WIN32 main.cpp main.rc 
         window/windows/FileDialog.cpp

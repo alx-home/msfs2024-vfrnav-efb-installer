@@ -7,9 +7,19 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <ios>
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+#pragma clang diagnostic pop
 
 #ifdef _WIN32
 int WINAPI
@@ -18,45 +28,72 @@ WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR lpCmdLine, int /*nCm
 int
 main() {
 #endif
+   std::string_view cmd{lpCmdLine};
+   std::cout << "!!!" << cmd << "!!!" << std::endl;
 
-   std::string cmd{lpCmdLine};
-   std::cout << "!!!" << lpCmdLine << "!!!" << std::endl;
+   std::unordered_map<std::string, std::pair<std::string, bool>> resources{};
+   std::unordered_map<std::string, std::pair<std::string, bool>> appResources{};
+   std::string                                                   name{};
 
-   std::unordered_map<std::string, std::string> resources{};
-   std::unordered_map<std::string, std::string> appResources{};
-   std::string                                  name{};
+   std::string_view type{};
+   std::string_view tag{};
+   bool             option{false};
+   bool             zip{false};
 
-   std::string type{};
-   std::string tag{};
-   while (cmd.size()) {
-      auto const split = cmd.find_first_of(' ');
+   auto constexpr split = [](std::string_view cmd) constexpr -> std::string_view {
+      auto const pos = cmd.find_first_of(' ');
 
-      if (name.empty()) {
-         name = cmd.substr(0, split);
+      if (pos == std::string::npos) {
+         return cmd;
+      }
+      return {cmd.begin(), cmd.begin() + pos};
+   };
+
+   auto constexpr next = [](std::string_view cmd) constexpr -> std::string_view {
+      auto const pos = cmd.find_first_of(' ');
+
+      if (pos == std::string::npos) {
+         return {cmd.end(), cmd.end()};
+      }
+      return {cmd.begin() + pos + 1, cmd.end()};
+   };
+
+   for (std::string_view value = split(cmd);
+        cmd.size();
+        cmd = next(cmd), value = split(cmd)) {
+      if (option) {
+         assert(value == "zip");
+         zip    = true;
+         option = false;
+      } else if (name.empty()) {
+         name = value;
       } else if (type.empty()) {
-         type = cmd.substr(0, split);
+         type = value;
          assert(type.starts_with("--"));
       } else if (tag.empty()) {
-         tag = cmd.substr(0, split);
+         tag = value;
       } else {
+         if (value == "--option") {
+            option = true;
+            continue;
+         }
+
+         assert(!value.starts_with("--"));
+
          assert(type.size());
          assert(tag.size());
 
          if (type == "--app") {
-            appResources.emplace(tag, cmd.substr(0, split));
+            appResources.emplace(tag, std::pair{value, zip});
          } else {
             assert(type == "--resource");
-            resources.emplace(tag, cmd.substr(0, split));
+            resources.emplace(tag, std::pair{value, zip});
          }
 
-         type.clear();
-         tag.clear();
+         type = {};
+         tag  = {};
+         zip  = false;
       }
-
-      if (split == std::string::npos) {
-         break;
-      }
-      cmd = cmd.substr(split + 1);
    }
 
    std::string const headerpath{name + "/Resources.cpp"};
@@ -84,7 +121,10 @@ main() {
 
    std::size_t resource_index = 0;
 
-   for (auto const& [name, resource] : appResources) {
+   for (auto const& [name, resource_] : appResources) {
+      auto const& [resource, _] = resource_;
+      assert(!_);
+
       std::size_t                                      offset = resource.size();
       std::vector<std::pair<std::string, std::string>> entries{};
 
@@ -174,9 +214,44 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
 )_" << std::endl;
    }
 
-   for (auto const& [name, resource] : resources) {
+   for (auto const& [name, resource_] : resources) {
+      auto const& [resource__, zip] = resource_;
 
-      std::cout << "Generating " << resource << ": " << name << std::endl;
+      std::filesystem::path resource = resource__;
+
+      if (zip) {
+         std::vector<char> data{};
+         {
+            std::ifstream file{resource, std::ios::binary};
+            file.seekg(0, std::ios::end);
+            auto const size = file.tellg();
+            file.seekg(0, std::ios::beg);
+
+            data.resize(size);
+            file.read(data.data(), data.size());
+         }
+
+         auto const        hash = std::hash<std::string_view>{}({data.data(), data.size()});
+         std::stringstream ss{};
+         ss << std::hex << hash;
+         resource = name + "_" + (ss.str() + ".bin");
+
+         if (!std::filesystem::exists(resource)) {
+            std::ofstream file{resource, std::ios::binary | std::ios::ate};
+
+            using namespace boost::iostreams;
+
+            filtering_ostreambuf out;
+            out.push(zlib_compressor(zlib::best_compression));
+            out.push(file);
+
+            array_source in{data.data(), data.size()};
+
+            copy(in, out);
+         }
+      }
+
+      std::cout << "Generating " << resource << " (" << resource__ << "): " << name << std::endl;
 
       headerOut << std::format(R"_(
 // ------------------------------------------------------------------------------------
@@ -202,8 +277,9 @@ incbin "{1}"
 {0}_end:
           )_",
                             name,
-                            resource)
+                            resource.string())
              << std::endl;
    }
+
    return 0;
 }

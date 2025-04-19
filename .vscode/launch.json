@@ -15,6 +15,23 @@
          "environment": [],
          "console": "integratedTerminal",
          "preLaunchTask": "CMake: build"
+      },
+      {
+         "name": "(Windows) Launch Packager",
+         "type": "cppvsdbg",
+         "request": "attach",
+         "processId": "${command:pickProcess}"
+         // "program": "${workspaceFolder}/build/packager/packager.exe",
+         // "args": [
+         //    "C:/Users/alexg/Documents/workspace/msfs2024-vfrnav-efb-installer/build/server",
+         //    "--app",
+         //    "resources",
+         //    "C:/Users/alexg/Documents/workspace/msfs2024-vfrnav-efb-installer/build/server/app/dist"
+         // ],
+         // "stopAtEntry": false,
+         // "cwd": "${fileDirname}",
+         // "environment": [],
+         // "console": "integratedTerminal"
       }
    ]
 }

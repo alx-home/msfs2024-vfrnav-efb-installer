@@ -1,14 +1,6 @@
 add_subdirectory(app)
 
-# set(FETCHCONTENT_SOURCE_DIR_MICROSOFT_WEB_WEBVIEW2 ${CMAKE_SOURCE_DIR}/packages/Microsoft.Web.WebView2/)
-set(FETCHCONTENT_SOURCE_DIR_WEBVIEW ${CMAKE_SOURCE_DIR}/packages/webview)
-set(FETCHCONTENT_SOURCE_DIR_JSON ${CMAKE_SOURCE_DIR}/packages/json)
-set(FETCHCONTENT_SOURCE_DIR_PROMISE ${CMAKE_SOURCE_DIR}/packages/promise)
-set(FETCHCONTENT_SOURCE_DIR_WINDOWS ${CMAKE_SOURCE_DIR}/packages/windows)
-
 option(WATCH_MODE "Enable watch mode in debug mode" ON)
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/dependencies.cmake)
 
 add_executable(installer WIN32 main.cpp main.rc 
         window/windows/FileDialog.cpp
@@ -85,6 +77,8 @@ else()
     )
 endif()
 
+target_link_libraries(installer PRIVATE Boost::iostreams)
+
 
 set(MAJOR_VERSION 1)
 set(MINOR_VERSION 0)
@@ -100,7 +94,7 @@ set_target_properties(installer PROPERTIES OUTPUT_NAME "vfrnav-installer")
 # PACKAGER
 
 package(TARGET_NAME installer_resources 
-        RESOURCES 
+        Z_RESOURCES 
             server_bin ${CMAKE_BINARY_DIR}/server/vfrnav-server.exe
         APP_RESOURCES
             resources ${CMAKE_CURRENT_BINARY_DIR}/app

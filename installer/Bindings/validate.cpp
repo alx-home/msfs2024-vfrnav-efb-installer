@@ -11,6 +11,14 @@
 #include <regex>
 #include <string_view>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+#pragma clang diagnostic ignored "-Wdeprecated-copy-with-user-provided-copy"
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+#pragma clang diagnostic pop
+
 std::string
 RemoveFromExeXml(std::string_view data) {
    // error_stack....
@@ -187,7 +195,14 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
 
    {
       std::ofstream file(installPath + "\\vfrnav-server.exe", std::ios::ate | std::ios::binary);
-      file.write(reinterpret_cast<char const*>(server_bin.data()), server_bin.size());
+
+      using namespace boost::iostreams;
+
+      filtering_istreambuf in;
+      in.push(zlib_decompressor());
+      in.push(array_source{reinterpret_cast<char const*>(server_bin.data()), server_bin.size()});
+
+      copy(in, file);
    }
 
    auto const                  fsPath  = std::filesystem::path(communityPath).parent_path().parent_path().parent_path();
