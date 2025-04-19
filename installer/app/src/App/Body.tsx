@@ -2,7 +2,8 @@ import { Button } from "@Utils/Button";
 import { EndSlot, Input } from "@Utils/Input";
 import { Scroll } from "@Utils/Scroll";
 import { Option, Select } from "@Utils/Select";
-import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { PropsWithChildren, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { addPopup, LoadingPopup } from "./Popup";
 
 const Elem = ({ children }: PropsWithChildren) => {
    return <div className='flex flex-row bg-slate-800 p-5 text-left'>
@@ -93,6 +94,10 @@ export const Body = ({ setCanContinue, validate }: {
 
    const [startupOption, setStartupOption] = useState<StartupOption>('Login');
 
+   const closeRef = useMemo<{
+      current?: () => void
+   }>(() => ({}), []);
+
    useEffect(() => {
       (async () => {
          const community = await window.findCommunity();
@@ -116,10 +121,12 @@ export const Body = ({ setCanContinue, validate }: {
    }, [communityValid, installPathValid, setCanContinue]);
 
    useEffect(() => {
-      validate.current = () => {
-         window.validate(startupOption, communityPath, installPath);
+      validate.current = async () => {
+         addPopup(<LoadingPopup title="Installing" message="Installing MSFS VFRNav server..." closeRef={closeRef} />)
+         await window.validate(startupOption, communityPath, installPath);
+         closeRef.current!();
       }
-   })
+   }, [closeRef, communityPath, installPath, startupOption, validate])
 
    return <div className='flex flex-col grow min-h-0 justify-center overflow-hidden'>
       <div className='flex flex-col mx-auto min-w-[80%] overflow-hidden'>

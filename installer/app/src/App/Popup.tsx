@@ -9,7 +9,7 @@ let popupRef: Dispatch<SetStateAction<ReactElement | undefined>> | undefined = u
 let popupProm = Promise.resolve();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const addPopup = (elem_: ReactElement<any>) => {
+export const addPopup = (elem_: ReactElement<any>) => {
    popupProm = popupProm.then(() =>
       new Promise<void>((resolve) =>
          popupRef?.(<elem_.type {...elem_.props} close={resolve} />)
@@ -19,7 +19,7 @@ const addPopup = (elem_: ReactElement<any>) => {
    })
 };
 
-const MessagePopup = ({ message, close, title }: {
+export const MessagePopup = ({ message, close, title }: {
    title: ReactElement
    message: string,
    close?: () => void
@@ -33,6 +33,30 @@ const MessagePopup = ({ message, close, title }: {
       </div>
       <div className='flex flex-row grow'>
          <Button active={true} onClick={close}>OK</Button>
+      </div>
+   </div>
+};
+
+export const LoadingPopup = ({ message, closeRef, close, title }: {
+   title: string
+   message: string,
+   close?: () => void,
+   closeRef: {
+      current?: () => void
+   }
+}) => {
+   useEffect(() => {
+      if (close) {
+         closeRef.current = close;
+      }
+   }, [close, closeRef])
+
+   return <div className='flex flex-col gap-y-6 grow'>
+      <div className='text-3xl text-blue-400'>{title}</div>
+      <div className='text-xl gap-y-2 overflow-hidden'>
+         <Scroll>
+            <div className="mb-4" dangerouslySetInnerHTML={{ __html: message }}></div>
+         </Scroll>
       </div>
    </div>
 };
