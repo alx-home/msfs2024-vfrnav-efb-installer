@@ -22,11 +22,6 @@
 #include <string>
 #include <utility>
 
-enum class ProgramMode {
-   INSTALL,
-   EXE
-};
-
 #ifdef _WIN32
 int WINAPI
 WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLine*/, int /*nCmdShow*/) {
@@ -146,6 +141,26 @@ Main::bind(std::string_view name, Return (Main::*member_ptr)(Args...)) {
 }
 
 void
+Main::Warning(std::string_view message) {
+   webview_.eval(R"(window.display_warning()" + js::serialize(message) + R"();)");
+}
+
+void
+Main::Error(std::string_view message) {
+   webview_.eval(R"(window.display_error()" + js::serialize(message) + R"();)");
+}
+
+void
+Main::Fatal(std::string_view message) {
+   webview_.eval(R"(window.display_fatal()" + js::serialize(message) + R"();)");
+}
+
+void
+Main::Info(std::string_view message) {
+   webview_.eval(R"(window.display_info()" + js::serialize(message) + R"();)");
+}
+
+void
 Main::install_bindings() {
    bind("abort", &Main::abort);
    bind("exists", &Main::exists);
@@ -155,5 +170,4 @@ Main::install_bindings() {
    bind("openFolder", &Main::openFolder);
    bind("findCommunity", &Main::findCommunity);
    bind("defaultInstallPath", &Main::defaultInstallPath);
-   bind("validate", &Main::validate);
 }

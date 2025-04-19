@@ -21,7 +21,6 @@ win32_executable(TARGET_NAME server
         Bindings/openFile.cpp
         Bindings/openFolder.cpp
         Bindings/parentExists.cpp
-        Bindings/validate.cpp
 
     COMPILE_OPTIONS
         ${COMPILE_OPTIONS}
