@@ -1,36 +1,48 @@
 include(FetchContent)
 
+message(STATUS "Fetching alx-home::webview")
 FetchContent_Declare(
     webview
     GIT_REPOSITORY https://github.com/webview/webview
     GIT_TAG 1.0.0
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+)
 
+message(STATUS "Fetching alx-home::json")
 FetchContent_Declare(
     json
     GIT_REPOSITORY https://github.com/alx-home/json
     GIT_TAG 1.0.0
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+)
 
+message(STATUS "Fetching alx-home::promise")
 FetchContent_Declare(
     promise
     GIT_REPOSITORY https://github.com/alx-home/promise
     GIT_TAG 1.1.0
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+)
 
+message(STATUS "Fetching alx-home::windows")
 FetchContent_Declare(
     windows
     GIT_REPOSITORY https://github.com/alx-home/windows
     GIT_TAG 1.0.0
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+)
 
+message(STATUS "Fetching zlib...")
 FetchContent_Declare(
     zlib
     GIT_REPOSITORY https://github.com/madler/zlib.git
     GIT_TAG v1.3.1
     GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+)
 
+message(STATUS "Fetching boost library sources. This will take some time...")
+set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
 FetchContent_Declare(
     Boost
     PATCH_COMMAND git -C libs/context checkout -- ./CMakeLists.txt
@@ -38,7 +50,9 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/boostorg/boost
     GIT_TAG boost-1.88.0
     GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE)
+    GIT_PROGRESS TRUE
+)
+unset(FETCHCONTENT_QUIET)
 
 # Configure Boost
 
@@ -59,4 +73,5 @@ set(BOOST_IOSTREAMS_ENABLE_ZLIB TRUE)
 set(BOOST_ENABLE_CMAKE ON)
 set(BOOST_LIBRARIES iostreams)
 
+# @TODO first configure failed...
 FetchContent_MakeAvailable(Boost windows promise json webview)
