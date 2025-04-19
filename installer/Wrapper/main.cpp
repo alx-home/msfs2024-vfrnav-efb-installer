@@ -30,29 +30,8 @@ main() {
    }
 #endif  // DEBUG
 
-   auto const temp = std::filesystem::temp_directory_path() / "vfrnav-installer.exe";
-   {
-      if (std::filesystem::exists(temp)) {
-         MessageBox(
-            nullptr,
-            "VFRNav Installer is already runnning !",
-            "Error",
-            MB_OK | MB_ICONERROR
-         );
-         return EXIT_FAILURE;  //@todo
-      }
-
-      std::ofstream file(temp, std::ios::ate | std::ios::binary);
-
-      using namespace boost::iostreams;
-
-      filtering_istreambuf in;
-      in.push(zlib_decompressor());
-      in.push(array_source{reinterpret_cast<char const*>(installer_bin.data()), installer_bin.size()});
-
-      copy(in, file);
-   }
-
+   auto const    temp = std::filesystem::temp_directory_path() / "vfrnav-installer.exe";
+   std::ofstream file(temp, std::ios::ate | std::ios::binary);
    struct Remove {
       std::filesystem::path const& path_;
 
@@ -60,18 +39,27 @@ main() {
          : path_{path} {}
 
       ~Remove() {
-         auto const result = std::filesystem::remove(path_);
-
-         if (!result) {
-            MessageBox(
-               nullptr,
-               ("Couldn't remove \"" + path_.string() + "\" !").c_str(),
-               "Error",
-               MB_OK | MB_ICONERROR
-            );
-         }
+         std::filesystem::remove(path_);
       }
    } _{temp};
+
+   if (!file.is_open()) {
+      MessageBox(
+         nullptr,
+         "VFRNav Installer is already runnning !",
+         "Error",
+         MB_OK | MB_ICONERROR
+      );
+      return EXIT_FAILURE;
+   }
+
+   using namespace boost::iostreams;
+
+   filtering_istreambuf in;
+   in.push(zlib_decompressor());
+   in.push(array_source{reinterpret_cast<char const*>(installer_bin.data()), installer_bin.size()});
+
+   copy(in, file);
 
    // additional information
    STARTUPINFO         si;
