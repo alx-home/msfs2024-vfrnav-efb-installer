@@ -237,6 +237,17 @@ std::unordered_map<std::string, std::span<std::byte const>> const {0} {{)_",
          resource = name + "_" + (ss.str() + ".bin");
 
          if (!std::filesystem::exists(resource)) {
+            // Cleanup previous builds
+            for (auto const& elem : std::filesystem::directory_iterator("." / resource.root_directory())) {
+               if (elem.is_regular_file()) {
+                  auto const path_name = elem.path().filename().string();
+                  if (path_name.starts_with(name + "_") && path_name.ends_with(".bin")) {
+                     std::cout << "Removing \"" << path_name << "\"" << std::endl;
+                     std::filesystem::remove(path_name);
+                  }
+               }
+            }
+
             std::ofstream file{resource, std::ios::binary | std::ios::ate};
 
             using namespace boost::iostreams;
