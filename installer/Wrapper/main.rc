@@ -1,0 +1,4 @@
+#include <windows.h>
+
+IDI_ICON1 ICON "../../assets/vfrnav.ico"
+IDI_APPLICATION ICON "../../assets/vfrnav.ico"

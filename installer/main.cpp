@@ -22,11 +22,6 @@
 #include <string>
 #include <utility>
 
-enum class ProgramMode {
-   INSTALL,
-   EXE
-};
-
 #ifdef _WIN32
 int WINAPI
 WinMain(HINSTANCE /*hInst*/, HINSTANCE /*hPrevInst*/, LPSTR /*lpCmdLine*/, int /*nCmdShow*/) {
