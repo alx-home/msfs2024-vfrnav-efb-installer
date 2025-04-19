@@ -5,6 +5,7 @@
 #include <webview/webview.h>
 #include <wrl/client.h>
 #include <string>
+#include <string_view>
 
 class Main {
 public:
@@ -23,6 +24,10 @@ private:
    Promise<std::string> findCommunity();
    Promise<std::string> defaultInstallPath();
    Promise<>            validate(std::string startupOption, std::string communityPath, std::string installPath);
+
+   void Warning(std::string_view message);
+   void Error(std::string_view message);
+   void Fatal(std::string_view message);
 
 private:
    std::string const appdata_       = GetAppData();

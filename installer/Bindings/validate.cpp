@@ -172,24 +172,20 @@ AddToExeXml(std::string_view data, std::string_view path) {
 Promise<>
 Main::validate(std::string startupOption, std::string communityPath, std::string installPath) {
    if (std::filesystem::path const path{installPath}; !path.has_parent_path() || !std::filesystem::exists(path.parent_path())) {
-      webview_.eval(R"(window.pfatal('Parent path not found : <br/>)" + js::serialize(installPath) + R"(');)");
-      co_return;
+      co_return Fatal("Parent path not found : <br/>\"" + installPath + "\"");
    }
 
    if (!std::filesystem::exists(communityPath)) {
-      webview_.eval(R"(window.pfatal('Path not found : <br/>)" + js::serialize(communityPath) + R"(');)");
-      co_return;
+      co_return Fatal("Path not found : <br/>\"" + communityPath + "\"");
    }
 
    if (startupOption != "Startup" && startupOption != "Login" && startupOption != "Never") {  //@todo json : std::variant + fixed string value
-      webview_.eval(R"(window.pfatal('Unknown startup option : )" + js::serialize(startupOption) + R"(');)");
-      co_return;
+      co_return Fatal("Unknown startup option : \"" + startupOption + "\"");
    }
 
    if (!std::filesystem::create_directory(installPath)) {
       if (!std::filesystem::exists(installPath) || !std::filesystem::is_directory(installPath)) {
-         webview_.eval(R"(window.pfatal('Couldn\'t create directory : <br/>)" + js::serialize(installPath) + R"(');)");
-         co_return;
+         co_return Fatal("Couldn't create directory : <br/>\"" + installPath + "\"");
       }
    }
 
@@ -206,7 +202,7 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
    }
 
    auto const                  fsPath  = std::filesystem::path(communityPath).parent_path().parent_path().parent_path();
-   std::filesystem::path const exePath = fsPath.string() + "/exe.xml";
+   std::filesystem::path const exePath = fsPath.string() + "\\exe.xml";
 
    auto& registry = registry::get<Store::HKEY_CURRENT_USER_>();
    auto& settings = registry.alx_home_->settings_;
@@ -236,8 +232,7 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
 
    if (startupOption == "Startup" || cleanExe) {
       if (auto const exists = std::filesystem::exists(exePath); !exists && (startupOption == "Startup")) {
-         webview_.eval(R"(window.pfatal('Path not found : <br/>)" + js::serialize(exePath.string()) + R"(<br/><br/>Couldn\'t clean it !');)");
-         co_return;
+         Warning("Path not found : <br/>\"" + exePath.string() + "\"<br/><br/>Couldn't clean it !");
       } else if (exists) {
          std::string content;
 
@@ -261,7 +256,7 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
          std::ofstream file{exePath, std::ios::ate};
          file.write(content.data(), content.size());
       } else {
-         webview_.eval(R"(window.pwarning('Path not found : <br/>)" + js::serialize(exePath.string()) + R"(');)");
+         Warning("Path not found : <br/>\"" + exePath.string() + "\"");
       }
    }
 

@@ -141,6 +141,21 @@ Main::bind(std::string_view name, Return (Main::*member_ptr)(Args...)) {
 }
 
 void
+Main::Warning(std::string_view message) {
+   webview_.eval(R"(window.display_warning()" + js::serialize(message) + R"();)");
+}
+
+void
+Main::Error(std::string_view message) {
+   webview_.eval(R"(window.display_error()" + js::serialize(message) + R"();)");
+}
+
+void
+Main::Fatal(std::string_view message) {
+   webview_.eval(R"(window.display_fatal()" + js::serialize(message) + R"();)");
+}
+
+void
 Main::install_bindings() {
    bind("abort", &Main::abort);
    bind("exists", &Main::exists);
