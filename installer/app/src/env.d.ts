@@ -20,4 +20,5 @@ declare var validate: (_startupOption: StartupOption, _communityPath: string, _i
 declare var display_fatal: (_message: string) => void;
 declare var display_error: (_message: string) => void;
 declare var display_warning: (_message: string) => void;
+declare var display_info: (_message: string) => void;
 declare const __WEB_BROWSER_TEST__: boolean;

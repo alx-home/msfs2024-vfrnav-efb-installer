@@ -156,6 +156,11 @@ Main::Fatal(std::string_view message) {
 }
 
 void
+Main::Info(std::string_view message) {
+   webview_.eval(R"(window.display_info()" + js::serialize(message) + R"();)");
+}
+
+void
 Main::install_bindings() {
    bind("abort", &Main::abort);
    bind("exists", &Main::exists);

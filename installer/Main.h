@@ -28,6 +28,7 @@ private:
    void Warning(std::string_view message);
    void Error(std::string_view message);
    void Fatal(std::string_view message);
+   void Info(std::string_view message);
 
 private:
    std::string const appdata_       = GetAppData();

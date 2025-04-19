@@ -265,5 +265,5 @@ Main::validate(std::string startupOption, std::string communityPath, std::string
       run->value_ = installPath + "\\vfrnav.exe --minimize";
    }
 
-   co_return;
+   co_return Info("MSFS VFRNav server successfully installed !<br />");
 }
