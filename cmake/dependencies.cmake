@@ -42,7 +42,6 @@ FetchContent_Declare(
 )
 
 message(STATUS "Fetching boost library sources. This will take some time...")
-set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
 FetchContent_Declare(
     Boost
     PATCH_COMMAND git -C libs/context checkout -- ./CMakeLists.txt
@@ -52,7 +51,6 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )
-unset(FETCHCONTENT_QUIET)
 
 # Configure Boost
 
