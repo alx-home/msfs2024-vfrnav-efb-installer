@@ -10,11 +10,13 @@ let popupProm = Promise.resolve();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const addPopup = (elem_: ReactElement<any>) => {
-   return popupProm = popupProm.then(() =>
+   popupProm = popupProm.then(() =>
       new Promise<void>((resolve) =>
          popupRef?.(<elem_.type {...elem_.props} close={resolve} />)
-      ).then(() => popupRef?.(undefined))
-   )
+      )
+   ).then(() => {
+      popupRef?.(undefined)
+   })
 };
 
 const MessagePopup = ({ message, close, title }: {
@@ -26,7 +28,7 @@ const MessagePopup = ({ message, close, title }: {
       {title}
       <div className='text-xl gap-y-2 overflow-hidden'>
          <Scroll>
-            <div dangerouslySetInnerHTML={{ __html: message }}></div>
+            <div className="mb-4" dangerouslySetInnerHTML={{ __html: message }}></div>
          </Scroll>
       </div>
       <div className='flex flex-row grow'>

@@ -23,8 +23,12 @@ const Path = ({ onClick, path, defaultValue, placeholder, onChange, reload, vali
 }) => {
    const ref = useRef<HTMLInputElement>(null);
    const callback = useCallback(() => onClick(ref.current!.value.length ? ref.current!.value : (defaultValue ?? path)), [onClick, defaultValue, path]);
-   const validate = useCallback((path: string) => (checkParent ? window.parentExists(path) : window.exists(path)).then((value) => value ? (_validate?.(path) ?? true) : false
-   ), [_validate, checkParent]);
+   const validate = useCallback((path: string) => (
+      checkParent ?
+         window.parentExists(path) :
+         window.exists(path))
+      .then((value) => value ? (_validate?.(path) ?? true) : false
+      ), [_validate, checkParent]);
 
    return <div className='flex flex-col grow justify-center'>
       <div className='flex flex-col shrink'>
